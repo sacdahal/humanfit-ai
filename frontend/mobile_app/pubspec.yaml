@@ -1,0 +1,6 @@
+name: humanfit_mobile_app
+
+# Flutter project dependencies
+
+environment:
+  sdk: '^3.8.0'

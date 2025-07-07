@@ -1,0 +1,8 @@
+# Python dependencies for backend
+
+fastapi
+uvicorn
+scikit-learn
+numpy
+sqlalchemy
+aiosqlite

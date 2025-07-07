@@ -1,0 +1,22 @@
+# Ignore Python, Node, and Flutter files
+__pycache__/
+*.pyc
+node_modules/
+build/
+dist/
+.dart_tool/
+.packages
+pubspec.lock
+.env
+
+# VSCode
+.vscode/
+
+# Data
+feedback.jsonl
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Others
+.DS_Store

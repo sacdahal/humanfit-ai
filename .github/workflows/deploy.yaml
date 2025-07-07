@@ -1,0 +1,39 @@
+name: Deploy to GKE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Build Docker images
+        run: |
+          docker build -t humanfit-backend:latest ./backend
+          docker build -t humanfit-ai-worker:latest ./ai
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+      - name: Push Docker images
+        run: |
+          docker tag humanfit-backend:latest europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanfit-ai-repo/backend:latest
+          docker push europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanfit-ai-repo/backend:latest
+          docker tag humanfit-ai-worker:latest europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanfit-ai-repo/ai-worker:latest
+          docker push europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/humanfit-ai-repo/ai-worker:latest
+      - name: Deploy to GKE
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --region ${{ secrets.GCP_REGION }} --project ${{ secrets.GCP_PROJECT_ID }}
+          kubectl apply -f infra/k8s/
